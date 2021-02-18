@@ -1,4 +1,9 @@
-FROM ruby:3
+ARG RUBY_VERSION
+FROM ruby:$RUBY_VERSION
+
+ARG PG_MAJOR
+ARG NODE_MAJOR
+ARG YARN_VERSION
 
 # Common dependencies
 RUN apt-get update -qq \
@@ -15,10 +20,10 @@ RUN apt-get update -qq \
 
 # Add PostgreSQL to sources list
 RUN curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' 13 > /etc/apt/sources.list.d/pgdg.list
+  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
 
 # Add NodeJS to sources list
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_$NODE_MAJOR.x | bash -
 
 # Add Yarn to the sources list
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
@@ -27,9 +32,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
   DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
   libpq-dev \
-  postgresql-client \
+  postgresql-client-$PG_MAJOR \
   nodejs \
-  yarn \
+  yarn=$YARN_VERSION-1 &&\
   npm install -g n && \
   n lts && \
   apt-get clean && \
@@ -40,6 +45,9 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
 ENV LANG=C.UTF-8 \
   BUNDLE_JOBS=4 \
   BUNDLE_RETRY=3
+
+# Uncomment this line if you want to run binstubs without prefixing with `bin/` or `bundle exec`
+ENV PATH /app/bin:$PATH
 
 # Upgrade RubyGems
 RUN gem update --system

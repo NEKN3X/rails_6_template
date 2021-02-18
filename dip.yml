@@ -66,7 +66,6 @@ interaction:
 # Destructive!: just for a quick `rails new`
 provision:
   - dip compose down --volumes
-  - dip compose up -d postgres
   - dip bundle install
   - dip rails new . -d postgresql --webpacker --skip-listen --skip-git --api
   - dip yarn install

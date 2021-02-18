@@ -1,13 +1,40 @@
 ---
 version: "3.5"
 
+x-var: &APP_IMAGE_TAG
+  app:1.0.0
+x-var: &RUBY_VERSION
+  3
+x-var: &PG_MAJOR
+  13
+x-var: &POSTGRES
+  # postgres:PG_MAJOR
+  postgres:13
+x-var: &NODE_MAJOR
+  15
+x-var: &YARN_VERSION
+  2.4.1
+x-var: &POSTGRES_USER
+  postgres
+x-var: &POSTGRES_PASSWORD
+  password
+x-var: &DATABASE_URL
+  # postgres://POSTGRES_USER:POSTGRES_PASSWORD@postgres:5432
+  postgres://postgres:password@postgres:5432
+
 x-app: &app
   build:
     context: .
     dockerfile: ./Dockerfile
+    args:
+      RUBY_VERSION: *RUBY_VERSION
+      PG_MAJOR: *PG_MAJOR
+      NODE_MAJOR: *NODE_MAJOR
+      YARN_VERSION: *YARN_VERSION
   environment: &env
     NODE_ENV: development
     RAILS_ENV: ${RAILS_ENV:-development}
+  image: *APP_IMAGE_TAG
   tmpfs:
     - /tmp
 
@@ -23,7 +50,7 @@ x-backend: &backend
     - rails_cache:/app/tmp/cache
   environment:
     <<: *env
-    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    DATABASE_URL: *DATABASE_URL
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     WEBPACKER_DEV_SERVER_HOST: webpacker
     WEB_CONCURRENCY: 1
@@ -48,15 +75,17 @@ services:
     <<: *backend
     command: bundle exec rails server -b 0.0.0.0
     ports:
-      - 3000
+      - "3000:3000"
 
   postgres:
-    image: postgres
+    image: *POSTGRES
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - ./tmp/db:/var/lib/postgresql/data
       - ./log:/root/log:cached
     environment:
       PSQL_HISTFILE: /root/log/.psql_history
+      POSTGRES_USER: *POSTGRES_USER
+      POSTGRES_PASSWORD: *POSTGRES_PASSWORD
     ports:
       - 5432
     healthcheck:
