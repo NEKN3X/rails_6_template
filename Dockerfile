@@ -3,7 +3,6 @@ FROM ruby:$RUBY_VERSION
 
 ARG PG_MAJOR
 ARG NODE_MAJOR
-ARG YARN_VERSION
 
 # Common dependencies
 RUN apt-get update -qq \
@@ -34,7 +33,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
   libpq-dev \
   postgresql-client-$PG_MAJOR \
   nodejs \
-  yarn=$YARN_VERSION-1 &&\
+  yarn &&\
   npm install -g n && \
   n lts && \
   apt-get clean && \

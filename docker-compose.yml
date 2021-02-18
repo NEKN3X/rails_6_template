@@ -12,15 +12,10 @@ x-var: &POSTGRES
   postgres:13
 x-var: &NODE_MAJOR
   15
-x-var: &YARN_VERSION
-  2.4.1
 x-var: &POSTGRES_USER
-  postgres
+  ${POSTGRES_PASSWORD:-postgres}
 x-var: &POSTGRES_PASSWORD
-  password
-x-var: &DATABASE_URL
-  # postgres://POSTGRES_USER:POSTGRES_PASSWORD@postgres:5432
-  postgres://postgres:password@postgres:5432
+  ${POSTGRES_PASSWORD:-password}
 
 x-app: &app
   build:
@@ -30,7 +25,6 @@ x-app: &app
       RUBY_VERSION: *RUBY_VERSION
       PG_MAJOR: *PG_MAJOR
       NODE_MAJOR: *NODE_MAJOR
-      YARN_VERSION: *YARN_VERSION
   environment: &env
     NODE_ENV: development
     RAILS_ENV: ${RAILS_ENV:-development}
@@ -50,7 +44,6 @@ x-backend: &backend
     - rails_cache:/app/tmp/cache
   environment:
     <<: *env
-    DATABASE_URL: *DATABASE_URL
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     WEBPACKER_DEV_SERVER_HOST: webpacker
     WEB_CONCURRENCY: 1
